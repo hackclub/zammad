@@ -115,7 +115,7 @@ class Auth::EmailLinkVerificationsController < ApplicationController
     hackclub_email = session[:link_email]
     sso = pending_sso
 
-    auth_hash = build_auth_hash(sso)
+    auth_hash = build_auth_hash(sso, hackclub_email)
     user = nil
 
     begin
@@ -151,14 +151,14 @@ class Auth::EmailLinkVerificationsController < ApplicationController
     end
   end
 
-  def build_auth_hash(sso)
+  def build_auth_hash(sso, hackclub_email)
     first_name, _, last_name = sso['name'].to_s.rpartition(' ')
     {
       'uid'      => sso['uid'],
       'login'    => sso['uid'],
       'provider' => sso['provider'],
       'info'     => {
-        'email'      => sso['email'],
+        'email'      => hackclub_email,
         'name'       => sso['name'],
         'first_name' => first_name.presence,
         'last_name'  => last_name.presence,
