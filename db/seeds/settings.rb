@@ -2109,6 +2109,13 @@ Setting.create_if_not_exists(
         placeholder: '',
       },
       {
+        display:     __('Secret'),
+        null:        true,
+        name:        'secret',
+        tag:         'input',
+        placeholder: '',
+      },
+      {
         display:     __('Issuer'),
         null:        true,
         name:        'issuer',

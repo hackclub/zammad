@@ -11,6 +11,7 @@ class OmniAuth::Strategies::OidcDatabase < OmniAuth::Strategies::OpenIDConnect
 
     client_options = {
       identifier:   auth_openid_connect_credentials['identifier'],
+      secret:       auth_openid_connect_credentials['secret'],
       redirect_uri: "#{http_type}://#{fqdn}/auth/openid_connect/callback",
     }
 
