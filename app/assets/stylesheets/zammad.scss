@@ -3681,14 +3681,6 @@ kbd {
   text-decoration: underline;
 }
 
-.group-sectioned-select option[disabled] {
-  font-weight: bold;
-  color: hsl(0, 0%, 60%);
-  font-size: 0.85em;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
 .poweredBy {
   display: none;
   align-items: center;
