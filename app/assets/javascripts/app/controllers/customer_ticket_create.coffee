@@ -60,9 +60,12 @@ class CustomerTicketCreate extends App.ControllerAppContent
     pre_top     = { ticket_duplicate_detection: { name: 'ticket_duplicate_detection', display: 'ticket_duplicate_detection', tag: 'ticket_duplicate_detection', label_class: 'hidden', renderTarget: '.ticket-form-top', null: true } }
     top         = App.Ticket.attributesGet('create_top', attributes = false, noDefaultAttributes = true, className = undefined, renderTarget = '.ticket-form-top')
 
-    # Flatten tree_select group picker into a plain select with optgroups for customers
+    # Replace tree_select with a flat sectioned select for customers
     if top.group_id && top.group_id.tag is 'tree_select'
       top.group_id.tag = 'select'
+      delete top.group_id.relation
+      top.group_id.options = @buildGroupSections()
+      top.group_id.class = 'group-sectioned-select'
 
     article_top = App.TicketArticle.attributesGet('create_top', attributes = false, noDefaultAttributes = true, className = undefined, renderTarget = '.article-form-top')
     middle      = App.Ticket.attributesGet('create_middle', attributes = false, noDefaultAttributes = true, className = undefined, renderTarget = '.ticket-form-middle')
@@ -95,6 +98,32 @@ class CustomerTicketCreate extends App.ControllerAppContent
       params:       defaults
       sidebarState: @sidebarState
     )
+
+  buildGroupSections: ->
+    groups = App.Group.all().filter((g) -> g.active)
+    parents = {}
+    children = {}
+
+    for group in groups
+      parts = group.name.split('::')
+      if parts.length is 1
+        parents[group.name] = group
+      else
+        parentName = parts.slice(0, -1).join('::')
+        children[parentName] ?= []
+        children[parentName].push(group)
+
+    options = []
+    for parentName, parent of parents
+      kids = children[parentName] || []
+      if kids.length > 0
+        options.push({ name: parent.name_last || parentName, value: '', disabled: 'disabled' })
+        for child in _.sortBy(kids, (g) -> g.name_last || g.name)
+          options.push({ name: "  #{child.name_last || child.name.split('::').pop()}", value: child.id })
+      else
+        options.push({ name: parent.name_last || parentName, value: parent.id })
+
+    options
 
   cancel: ->
     @navigate '#'
