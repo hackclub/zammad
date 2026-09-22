@@ -39,7 +39,7 @@ RUN npm -g install corepack && corepack enable pnpm && \
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 
-ARG COMMIT_SHA
+ARG COMMIT_SHA=""
 # Optional additional build information, e.g. the customer image name when building
 #   images with addon packages. Shown in the version string of the instance.
 ARG BUILD_LABEL
@@ -71,8 +71,7 @@ COPY . .
 
 # Append build information to the Zammad VERSION.
 RUN if [ -z "${COMMIT_SHA}" ]; then \
-    echo "Error: the required build argument \$COMMIT_SHA is missing."; \
-    exit 1; \
+    COMMIT_SHA=$(git rev-parse HEAD 2>/dev/null || echo "00000000"); \
   fi; \
   if ! [[ "${COMMIT_SHA}" =~ ^[0-9a-fA-F]{8,40}$ ]]; then \
     echo "Error: the build argument \$COMMIT_SHA must match [0-9a-fA-F]{8,40}, got '${COMMIT_SHA}'."; \
