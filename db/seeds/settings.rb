@@ -1355,6 +1355,28 @@ Setting.create_if_not_exists(
   frontend:    false
 )
 Setting.create_if_not_exists(
+  title:       __('Allowed email domains for OIDC provisioning'),
+  name:        'auth_oidc_allowed_email_domains',
+  area:        'Security::ThirdPartyAuthentication',
+  description: __('Comma-separated list of email domains allowed to auto-provision via OIDC (e.g. "hackclub.com"). Users with other email domains will be asked to verify an allowed-domain email. Leave empty to allow all domains.'),
+  options:     {
+    form: [
+      {
+        display: '',
+        null:    true,
+        name:    'auth_oidc_allowed_email_domains',
+        tag:     'input',
+      },
+    ],
+  },
+  preferences: {
+    permission: ['admin.security'],
+    prio:       21,
+  },
+  state:       '',
+  frontend:    false
+)
+Setting.create_if_not_exists(
   title:       __('Authentication via %s'),
   name:        'auth_twitter',
   area:        'Security::ThirdPartyAuthentication',

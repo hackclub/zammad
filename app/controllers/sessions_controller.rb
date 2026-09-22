@@ -96,14 +96,7 @@ class SessionsController < ApplicationController
     session[:switched_from_user_id] = nil
 
     auth = request.env['omniauth.auth']
-
-    redirect_url = if request.env['omniauth.origin']&.include?('/mobile')
-                     "/mobile#{omniauth_redirect_path}"
-                   elsif request.env['omniauth.origin']&.include?('/desktop')
-                     "/desktop#{omniauth_redirect_path}"
-                   else
-                     '/#'
-                   end
+    redirect_url = omniauth_default_redirect_url
 
     if !auth
       logger.info('AUTH IS NULL, SERVICE NOT LINKED TO ACCOUNT')
@@ -117,6 +110,8 @@ class SessionsController < ApplicationController
     # whether there is already a user signed in.
     authorization = Authorization.find_from_hash(auth)
     if !authorization
+      return redirect_to_oidc_domain_gate(auth) if oidc_domain_gate_required?(auth)
+
       authorization = Authorization.create_from_hash(auth, current_user)
     end
 
@@ -418,6 +413,48 @@ class SessionsController < ApplicationController
     render json: { url: url }
   rescue => e
     Rails.logger.error "SAML SLO failed: #{e.message}"
+  end
+
+  def omniauth_default_redirect_url
+    if request.env['omniauth.origin']&.include?('/mobile')
+      "/mobile#{omniauth_redirect_path}"
+    elsif request.env['omniauth.origin']&.include?('/desktop')
+      "/desktop#{omniauth_redirect_path}"
+    else
+      '/#'
+    end
+  end
+
+  def redirect_to_oidc_domain_gate(auth)
+    stash_pending_sso(auth)
+    redirect_to auth_link_email_gate_path
+  end
+
+  def oidc_domain_gate_required?(auth)
+    return false if auth['provider'] != 'openid_connect'
+    return false if current_user
+
+    allowed = Setting.get('auth_oidc_allowed_email_domains').to_s.strip
+    return false if allowed.empty?
+
+    email_domain = auth['info']['email'].to_s.split('@').last&.downcase&.strip
+    return false if email_domain.blank?
+
+    domains = allowed.split(',').map { |d| d.strip.downcase }.reject(&:empty?)
+    domains.exclude?(email_domain)
+  end
+
+  def stash_pending_sso(auth)
+    session[:pending_sso] = {
+      'uid'      => auth['uid'],
+      'provider' => auth['provider'],
+      'email'    => auth.dig('info', 'email'),
+      'name'     => auth.dig('info', 'name'),
+      'image'    => auth.dig('info', 'image'),
+      'token'    => auth.dig('credentials', 'token'),
+      'secret'   => auth.dig('credentials', 'secret'),
+      'at'       => Time.current.to_i,
+    }
   end
 
   def omniauth_redirect_path
