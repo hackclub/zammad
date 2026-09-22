@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title><%= Setting.get('product_name') %></title>
+  <link rel="stylesheet" href="/assets/application.css" media="all">
+  <%= csrf_meta_tags %>
+</head>
+<body>
+  <div class="login fullscreen">
+    <div class="fullscreen-center">
+      <div class="fullscreen-body">
+        <div class="hero-unit">
+          <img class="company-logo" src="/api/v1/system_assets/product_logo/<%= Setting.get('product_logo') %>" alt="<%= Setting.get('product_name') %>">
+
+          <% if flash[:error].present? %>
+            <div class="alert alert--danger" role="alert"><%= flash[:error] %></div>
+          <% end %>
+
+          <h3><%= __('Verify your email to continue') %></h3>
+
+          <p>
+            <%= __('You signed in as') %> <strong><%= @email %></strong><%= __(",") %>
+            <%= __("which isn't on an allowed domain.") %>
+          </p>
+
+          <p>
+            <%= __('If you have a') %> <strong>@<%= @allowed_domains %></strong> <%= __('email, verify it below.') %>
+          </p>
+
+          <form action="<%= auth_link_email_path %>" method="post">
+            <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+            <div class="form-group">
+              <input name="hackclub_email" type="email" class="form-control"
+                     required placeholder="you@<%= @allowed_domains %>" autocomplete="email" autofocus>
+            </div>
+            <div class="form-controls">
+              <button class="btn btn--primary" type="submit"><%= __('Send verification code') %></button>
+            </div>
+          </form>
+
+          <div class="separator">
+            <span class="separator-text"><%= __('or') %></span>
+          </div>
+
+          <a href="/auth/openid_connect" class="btn btn--text btn--secondary align-center"><%= __('Sign in with a different account') %></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

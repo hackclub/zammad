@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title><%= Setting.get('product_name') %></title>
+  <link rel="stylesheet" href="/assets/application.css" media="all">
+  <%= csrf_meta_tags %>
+</head>
+<body>
+  <div class="login fullscreen">
+    <div class="fullscreen-center">
+      <div class="fullscreen-body">
+        <p><%= __('Check your email') %></p>
+
+        <div class="hero-unit">
+          <% if flash[:error].present? %>
+            <div class="alert alert--danger" role="alert"><%= flash[:error] %></div>
+          <% end %>
+
+          <p>
+            <%= __('We sent a 6-digit code to') %> <strong><%= @hackclub_email %></strong>.
+            <%= __('Enter it below to verify and sign in.') %>
+          </p>
+
+          <form action="<%= auth_link_email_verify_path %>" method="post">
+            <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+            <div class="form-group">
+              <div class="formGroup-label">
+                <label for="code"><%= __('Verification code') %></label>
+              </div>
+              <input id="code" name="code" type="text" class="form-control" inputmode="numeric"
+                     pattern="[0-9]*" maxlength="6" autocomplete="one-time-code"
+                     autofocus required placeholder="000000"
+                     style="text-align: center; font-size: 1.5em; letter-spacing: 0.3em;">
+            </div>
+            <div class="form-controls">
+              <button class="btn btn--primary" type="submit"><%= __('Verify & sign in') %></button>
+            </div>
+          </form>
+
+          <div class="separator">
+            <span class="separator-text"><%= __('or') %></span>
+          </div>
+
+          <form action="<%= auth_link_email_resend_path %>" method="post" style="display: inline;">
+            <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+            <button type="submit" class="btn btn--text btn--secondary"><%= __('Resend code') %></button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
