@@ -33,7 +33,10 @@ class App.UiElement.grouped_select extends App.UiElement.ApplicationUiElement
       kids = childrenOf[parentName] || []
       return unless kids.length
 
-      leaves = _.sortBy(kids.filter((g) -> isLeaf(g.name)), (g) -> g.name_last || g.name)
+      leaves = _.sortBy(kids.filter((g) -> isLeaf(g.name)), (g) ->
+        label = g.name_last || g.name.replace(/^.*::/, '')
+        if label is '(Other)' then 'zzz' else label
+      )
       branches = _.sortBy(kids.filter((g) -> !isLeaf(g.name)), (g) -> g.name_last || g.name)
 
       if leaves.length
