@@ -68,6 +68,9 @@ class CustomerTicketCreate extends App.ControllerAppContent
     middle      = App.Ticket.attributesGet('create_middle', attributes = false, noDefaultAttributes = true, className = undefined, renderTarget = '.ticket-form-middle')
     bottom      = App.Ticket.attributesGet('create_bottom', attributes = false, noDefaultAttributes = true, className = undefined, renderTarget = '.ticket-form-bottom')
 
+    if middle.group_id
+      middle.group_id.tag = 'grouped_select'
+
     @controllerFormCreateMiddle = new App.ControllerForm(
       el:                      @el.find('.ticket-create')
       form_id:                 @form_id
