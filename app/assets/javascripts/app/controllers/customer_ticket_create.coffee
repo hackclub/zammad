@@ -60,8 +60,9 @@ class CustomerTicketCreate extends App.ControllerAppContent
     pre_top     = { ticket_duplicate_detection: { name: 'ticket_duplicate_detection', display: 'ticket_duplicate_detection', tag: 'ticket_duplicate_detection', label_class: 'hidden', renderTarget: '.ticket-form-top', null: true } }
     top         = App.Ticket.attributesGet('create_top', attributes = false, noDefaultAttributes = true, className = undefined, renderTarget = '.ticket-form-top')
 
-    # Remove group_id from form system — we render it as a native <select> with <optgroup>
-    delete top.group_id
+    # Override group_id to use native grouped_select for customers
+    if top.group_id
+      top.group_id.tag = 'grouped_select'
 
     article_top = App.TicketArticle.attributesGet('create_top', attributes = false, noDefaultAttributes = true, className = undefined, renderTarget = '.article-form-top')
     middle      = App.Ticket.attributesGet('create_middle', attributes = false, noDefaultAttributes = true, className = undefined, renderTarget = '.ticket-form-middle')
@@ -85,9 +86,6 @@ class CustomerTicketCreate extends App.ControllerAppContent
       articleParamsCallback: @articleParams
     )
 
-    # Inject native <select> with <optgroup> for group picker
-    @el.find('.ticket-form-top').prepend(@buildNativeGroupSelect())
-
     @$('[name="group_id"], [name="organization_id"]').bind('change', =>
       @sidebarWidget.render(@params())
     )
@@ -97,41 +95,6 @@ class CustomerTicketCreate extends App.ControllerAppContent
       params:       defaults
       sidebarState: @sidebarState
     )
-
-  buildNativeGroupSelect: ->
-    groups = App.Group.all().filter((g) -> g.active)
-    parents = {}
-    children = {}
-
-    for group in groups
-      parts = group.name.split('::')
-      if parts.length is 1
-        parents[group.name] = group
-      else
-        topParent = parts[0]
-        children[topParent] ?= []
-        children[topParent].push(group)
-
-    select = $('<select name="group_id" id="group_id" class="form-control" required>')
-    select.append($('<option value="">').text('-'))
-
-    sortedParents = _.sortBy(Object.keys(parents))
-    for parentName in sortedParents
-      parent = parents[parentName]
-      kids = children[parentName] || []
-      if kids.length > 0
-        optgroup = $('<optgroup>').attr('label', parent.name_last || parentName)
-        for child in _.sortBy(kids, (g) -> g.name_last || g.name)
-          label = child.name.replace(/^.*::/, '')
-          optgroup.append($('<option>').val(child.id).text(label))
-        select.append(optgroup)
-      else
-        select.append($('<option>').val(parent.id).text(parent.name_last || parentName))
-
-    wrapper = $('<div class="form-group">')
-    wrapper.append($('<label for="group_id">').text(@T('Group')))
-    wrapper.append($('<div class="controls">').append(select))
-    wrapper
 
   cancel: ->
     @navigate '#'
